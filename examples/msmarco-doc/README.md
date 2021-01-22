@@ -1,6 +1,8 @@
 # MS MARCO Document
 This example walks through reranker LCE training and inference on MS MARCO document collection with BERT-base LM and HDCT retriever.
 
+After downloading the data, you can also skip the steps train data building and model training by using a trained model checkpoint uploded to Hugging Face model hub. See Inference sectoin for details.
+
 ## Preparing Data
 Download HDCT train rankings and dev file `hdct-marco-train.zip`, `dev.d100.tsv` from LTI server using this [link](http://boston.lti.cs.cmu.edu/appendices/TheWebConf2020-Zhuyun-Dai/rankings/) and unzip the latter.
 
@@ -16,6 +18,7 @@ qid  pid2  2
 ```
 Run the script with following command,
 ```
+mkdir -p {directory to store generated json training file}
 for i in $(seq -f "%03g" 0 183)
 do
 python helpers/build_train_from_ranking.py \
@@ -59,6 +62,7 @@ Validatoin during training to be added. Validation over the entire dev is too ex
 ## Inference
 First build the ranking input,
 ```
+mkdir -p {directory to save output}
 python helpers/topk_text_2_json.py \
   --file {path to dev.d100.tsv} \
   --save_to {directory to save output}/all.json \
@@ -67,12 +71,26 @@ python helpers/topk_text_2_json.py \
   --truncate 512 \
   --q_truncate -1 
 ```
-Run inference with generated input,
+Run inference with generated input using trained model checkpoint. You can also use DDP for inference by adding `python -m torch.distributed.launch --nproc_per_node {n_gpus}`. DP is currently not supported.
 ```
 python run_marco.py \
   --output_dir {score saving directory, not used for the moment} \
   --model_name_or_path {path to checkpoint} \
   --tokenizer_name bert-base-uncased \
+  --do_predict \
+  --max_len 512 \
+  --fp16 \
+  --per_device_eval_batch_size 64 \
+  --dataloader_num_workers 8 \
+  --pred_path {path to prediction json} \
+  --pred_id_file  {path to prediction id tsv} \
+  --rank_score_path {save path of the text file of scores}
+```
+Or with hub model,
+```
+python run_marco.py \
+  --output_dir {score saving directory, not used for the moment} \
+  --model_name_or_path Luyu/bert-base-mdoc-hdct \
   --do_predict \
   --max_len 512 \
   --fp16 \
