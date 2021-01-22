@@ -1,6 +1,6 @@
 # Reranker
 Reranker is a lightweight, effective and efficient package for training and deploying deep languge model reranker in information retrieval (IR), question answering (QA) and many other natural language processing (NLP) pipelines. 
-The training procedure follows our ECIR paper using a localized constrastive esimation (LCE) loss.
+The training procedure follows our ECIR paper [Rethink Training of BERT Rerankers in Multi-Stage Retrieval Pipeline](https://arxiv.org/abs/2101.08751) using a localized constrastive esimation (LCE) loss.
 
 Reranker speaks Huggingface🤗  language! This means that you instantly get all SOTA pre-trained models as soon as they are ported to HF transformers. You also get the familiar model and trainer interfaces！
 
@@ -159,11 +159,11 @@ We welcome contribution to the package, either adding new dataset interface or n
 You can reach me by email `luyug@cs.cmu.edu`. As a 2nd year master, I get busy days from time to time and may not reply very promptly. Feel free to ping me if you don't get replies.
 
 ## Citation
-If you use Reranker in your research, please consider citing our ECIR paper,
+If you use Reranker in your research, please consider citing our [ECIR paper](https://arxiv.org/abs/2101.08751),
 
 ```
 @inproceedings{gao2021lce,
-               title={Rethink Training of BERT Rerankersin Multi-Stage Retrieval Pipeline}, 
+               title={Rethink Training of BERT Rerankers in Multi-Stage Retrieval Pipeline}, 
                author={Luyu Gao and Zhuyun Dai and Jamie Callan},
                year={2021},
                booktitle={The 43rd European Conference On Information Retrieval (ECIR)},
