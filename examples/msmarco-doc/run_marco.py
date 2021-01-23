@@ -73,7 +73,7 @@ def main():
         use_fast=False,
     )
 
-    _model_class = RerankerDC if training_args.distance_cahce else Reranker
+    _model_class = RerankerDC if training_args.distance_cache else Reranker
 
     model = _model_class.from_pretrained(
         model_args, data_args, training_args,
@@ -93,7 +93,7 @@ def main():
 
 
     # Initialize our Trainer
-    _trainer_class = RerankerDCTrainer if training_args.distance_cahce else RerankerTrainer
+    _trainer_class = RerankerDCTrainer if training_args.distance_cache else RerankerTrainer
     trainer = _trainer_class(
         model=model,
         args=training_args,

@@ -10,6 +10,7 @@ from torch.utils.data import DistributedSampler, Dataset
 import logging
 logger = logging.getLogger(__name__)
 
+
 class SyncedSampler(DistributedSampler):
     def __init__(self, dataset: Dataset, num_replicas: Optional[int] = None,
                  rank: Optional[int] = None, shuffle: bool = True,

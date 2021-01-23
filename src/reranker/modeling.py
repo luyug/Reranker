@@ -8,7 +8,8 @@ from typing import Optional
 import torch
 import torch.functional as F
 import copy
-from transformers import AutoModelForSequenceClassification, PreTrainedModel
+from transformers import AutoModelForSequenceClassification, AutoTokenizer,\
+    PreTrainedModel, PreTrainedTokenizer
 from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOutputWithPooling
 from torch import nn
 import torch.distributed as dist
@@ -122,3 +123,38 @@ class RerankerDC(Reranker):
             return ranker_out
 
 
+class RerankerForInference(nn.Module):
+    def __init__(
+            self,
+            hf_model: Optional[PreTrainedModel] = None,
+            tokenizer: Optional[PreTrainedTokenizer] = None
+    ):
+        super().__init__()
+        self.hf_model = hf_model
+        self.tokenizer = tokenizer
+
+    def tokenize(self, *args, **kwargs):
+        return self.tokenizer(*args, **kwargs)
+
+    def forward(self, batch):
+        return self.hf_model(**batch)
+
+    @classmethod
+    def from_pretrained(cls, pretrained_model_name_or_path: str):
+        hf_model = AutoModelForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path)
+        hf_tokenizer = AutoTokenizer.from_pretrained(
+            pretrained_model_name_or_path)
+
+        hf_model.eval()
+        return cls(hf_model, hf_tokenizer)
+
+    def load_pretrained_model(self, pretrained_model_name_or_path, *model_args, **kwargs):
+        self.hf_model = AutoModelForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path, *model_args, **kwargs
+        )
+
+    def load_pretrained_tokenizer(self, pretrained_model_name_or_path, *inputs, **kwargs):
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            pretrained_model_name_or_path, *inputs, **kwargs
+        )
