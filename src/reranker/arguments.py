@@ -75,7 +75,7 @@ class DataArguments:
 @dataclass
 class RerankerTrainingArguments(TrainingArguments):
     warmup_ratio: float = field(default=0.1)
-    distance_cahce: bool = field(default=False)
-    distance_cahce_stride: int = field(default=2)
+    distance_cache: bool = field(default=False)
+    distance_cache_stride: int = field(default=2)
 
     collaborative: bool = field(default=False)

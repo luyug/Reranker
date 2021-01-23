@@ -6,8 +6,8 @@
 import os
 from typing import Dict, List, Tuple, Optional, Any, Union
 
-from reranker.dist.sampler import SyncedSampler
-from reranker.modeling import Reranker, RerankerDC
+from .dist.sampler import SyncedSampler
+from .modeling import Reranker, RerankerDC
 
 import torch
 from torch import nn
@@ -161,7 +161,7 @@ class RandContext:
 class RerankerDCTrainer(RerankerTrainer):
     def _chunk_input(self, inputs: Dict[str, torch.Tensor], chunk_size: int = None):
         if chunk_size is None:
-            chunk_size = self.args.distance_cahce_stride
+            chunk_size = self.args.distance_cache_stride
         keys = list(inputs.keys())
         for k, v in inputs.items():
             inputs[k] = v.split(chunk_size)
@@ -196,7 +196,7 @@ class RerankerDCTrainer(RerankerTrainer):
 
         all_logits = torch.cat(all_logits).float()
         loss, grads = _model.compute_grad(all_logits)
-        grads = grads.view(-1, self.args.distance_cahce_stride)
+        grads = grads.view(-1, self.args.distance_cache_stride)
 
         for chunk_id, chunk in enumerate(chunks):
             with rnd_states[chunk_id]:

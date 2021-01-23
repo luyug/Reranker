@@ -12,9 +12,10 @@ from typing import Union, List, Tuple, Dict
 import torch
 from torch.utils.data import Dataset
 
-from reranker.arguments import DataArguments, RerankerTrainingArguments
+from .arguments import DataArguments, RerankerTrainingArguments
 from transformers import PreTrainedTokenizer, BatchEncoding
 from transformers import DataCollatorWithPadding
+
 
 class GroupedTrainDataset(Dataset):
     query_columns = ['qid', 'query']
@@ -53,7 +54,7 @@ class GroupedTrainDataset(Dataset):
         self.total_len = len(self.nlp_dataset)
         self.train_args = train_args
 
-        if train_args.collaborative:
+        if train_args is not None and train_args.collaborative:
             import torch.distributed as dist
             if not dist.is_available():
                 raise RuntimeError("Requires distributed package to be available")
@@ -95,7 +96,7 @@ class GroupedTrainDataset(Dataset):
             examples.append((qry, neg_psg))
 
         # collaborative mode, split the group
-        if self.train_args.collaborative:
+        if self.train_args is not None and self.train_args.collaborative:
             examples = examples[self.chunk_start: self.chunk_end]
 
         for e in examples:

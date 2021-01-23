@@ -2,7 +2,7 @@
 Reranker is a lightweight, effective and efficient package for training and deploying deep languge model reranker in information retrieval (IR), question answering (QA) and many other natural language processing (NLP) pipelines. 
 The training procedure follows our ECIR paper [Rethink Training of BERT Rerankers in Multi-Stage Retrieval Pipeline](https://arxiv.org/abs/2101.08751) using a localized constrastive esimation (LCE) loss.
 
-Reranker speaks Huggingface🤗  language! This means that you instantly get all SOTA pre-trained models as soon as they are ported to HF transformers. You also get the familiar model and trainer interfaces！
+Reranker speaks Huggingface🤗 language! This means that you instantly get all state-of-the-art pre-trained models as soon as they are ported to HF transformers. You also get the familiar model and trainer interfaces.
 
 ### Stae of the Art Performance.
 Reranker has two submissions to MS MARCO document leaderboard. Each got 1st place, advancing the SOTA!
@@ -13,21 +13,21 @@ Reranker has two submissions to MS MARCO document leaderboard. Each got 1st plac
 | 2020/09/09 | HDCT top100 + BERT-base FirstP (single) | 0.434 | 0.382 |
 
 ### Features
-- Training rerankers from pre-trained the state-of-the-art language models like BERT, RoBERTa and ELECTRA.
-- State-of-the-art reranking performance with our LCE loss based training pipeline.
+- Training rerankers from the state-of-the-art pre-trained language models like BERT, RoBERTa and ELECTRA.
+- The state-of-the-art reranking performance with our LCE loss based training pipeline.
 - GPU memory optimizations: Loss Parallelism and Gradient Cache which allow training of larger model.
 - Faster training
     - Distributed Data Parallel (DDP) for multi GPUs. 
     - Automatic Mixed Precision (AMP) training and inference with up to 2x speedup!
-- Break CPU RAM limitation by memory mapping datasets with `pyarrow ` through `datasets` package interface.
-- Checkpoint interoperability with HF `transformers`.
+- Break CPU RAM limitation by memory mapping datasets with `pyarrow` through `datasets` package interface.
+- Checkpoint interoperability with Hugging Face `transformers`.
 
 ### Design Philosophy
 The library is designed to be dedicated for text reranking modeling, training and testing. This helps us keep the code concise and focus on a more specific task. 
 
 Under the hood, Reranker provides a thin layer of wrapper over Huggingface libraries. Our model wraps `PreTrainedModel` and our trainer sub-class Huggingface `Trainer`. You can then work with the familiar interfaces. 
 
-## Installation and Depencies
+## Installation and Dependencies
 Reranker uses Pytorch, Huggingface Transformers and Datasets.  Install with the following commands,
 ```
 git clone https://github.com/luyug/Reranker.git
@@ -42,25 +42,38 @@ pip install -e .
 ```
 
 ## Workflow
-Here is a code snippet to start reranker training on MS MARCO with roberta-base 
+### Inference (Reranking)
+The easiest way to do inference is to use one of our uploaded [trained checkpoints](https://huggingface.co/Luyu) with `RerankerForInference`.
 ```
-from reranker import Reranker, RerankerTrainer
-from reranker.arguments import ModelArguments, DataArguments, \
-    RerankerTrainingArguments as TrainingArguments
-from reranker.data import GroupedTrainDataset, GroupCollator
+from reranker import RerankerForInference
+rk = RerankerForInference.from_pretrained("Luyu/bert-base-mdoc-bm25")  # load checkpoint
 
-# get arguments
-parser = HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
-model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-
-# create tokenizer and model
+inputs = rk.tokenize('weather in new york', 'it is cold today in new york', return_tensors='pt')
+score = rk(inputs).logits
+``` 
+### Training
+For training, you will need a model, a dataset and a trainer. Say we have parsed arguments into
+ `model_args`, `data_args` and `training_args` with `reranker.arguments`. First, 
+initialize the reranker and tokenizer from one of 
+[pre-tained language models](https://huggingface.co/transformers/pretrained_models.html) from Hugging Face.
+For example, let's use RoBERTa by loading `roberta-base`.
+```
+from reranker import Reranker 
+from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained('roberta-base')
 model = Reranker.from_pretrained(model_args, data_args, training_args, 'roberta-base')
-
-# create train dataset
-train_dataset = GroupedTrainDataset(data_args, data_args.train_path, tokenizer=tokenizer, train_args=training_args)
-
-# initialize trainer and train
+```
+Then create the dataset,
+```
+from reranker.data import GroupedTrainDataset
+train_dataset = GroupedTrainDataset(
+    data_args, data_args.train_path, 
+    tokenizer=tokenizer, train_args=training_args
+)
+```
+Create a trainer and train,
+```
+from reranker import RerankerTrainer
 trainer = RerankerTrainer(
         model=model,
         args=training_args,
@@ -92,13 +105,17 @@ The method is described in our preprint [Scaling Deep Contrastive Learning Batch
 
 ## Helpers
 We provide a few helpers in the helper directory for data formatting,
+### Score Formatting
 - `score_to_marco.py` turns a raw score txt file into MS MARCO format.
 - `score_to_tein.py` turns a raw score txt file into trec eval format.
 
-*Detailed instructions to be added.*
-
+For example,
+```
+python score_to_tein.py --score_file {path to raw score txt}
+```
+This generates a trec eval format file in the same directory as the raw score file. 
 ## Data Format
-Reranker core utitlities expect precoessed and tokenized text in token id form. 
+Reranker core utilities (batch training, batch inference) expect processed and tokenized text in token id format. 
 This means pre-processing should be done beforehand, e.g. with BERT tokenizer.
 
 ### Training Data
@@ -123,7 +140,7 @@ Training data is grouped by query into a json file where each line has a query, 
     ]
 }
 ```
-
+Training data is handled by class `reranker.data.GroupedTrainDataset`.
 ### Inference (Reranking) Data
 Inference data is grouped by query document(passage) pairs. Each line is a json entry to be rereanked (scored).
 ```
@@ -142,6 +159,7 @@ qid0     pid1
 ```
 The ordering in the two files are expected to be the same.
 
+Inference data is handled by class `reranker.data.PredictionDataset`.
 ### Result Scores
 Scores are stored in a tsv file with columns corresponding to qid, pid and score.
 ```
