@@ -149,7 +149,7 @@ def main():
             assert len(pred_qids) == len(pred_scores)
             with open(data_args.rank_score_path, "w") as writer:
                 for qid, pid, score in zip(pred_qids, pred_pids, pred_scores):
-                    writer.write(f'{qid}\t{pid}\t{score}\n')
+                    writer.write(f'{qid}\t{pid}\t{score[0]}\n')
 
 
 def _mp_fn(index):
