@@ -6,28 +6,29 @@
 import argparse
 from collections import defaultdict
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--score_file', required=True)
-parser.add_argument('--run_id', default='marco')
-args = parser.parse_args()
 
-with open(args.score_file) as f:
-    lines = f.readlines()
+if __name__ == '__main__':
 
-all_scores = defaultdict(dict)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--score_file', required=True)
+    parser.add_argument('--run_id', default='marco')
+    args = parser.parse_args()
 
-for line in lines:
-    if len(line.strip()) == 0:
-        continue
-    qid, did, score = line.strip().split()
-    score = float(score)
-    all_scores[qid][did] = score
+    all_scores = defaultdict(dict)
 
-qq = list(all_scores.keys())
+    with open(args.score_file) as f:
+        for line in f:
+            if len(line.strip()) == 0:
+                continue
+            qid, did, score = line.strip().split()
+            score = float(score.replace('[', '').replace(']',''))
+            all_scores[qid][did] = score
 
-with open(args.score_file + '.marco', 'w') as f:
-    for qid in qq:
-        score_list = sorted(list(all_scores[qid].items()), key=lambda x: x[1], reverse=True)
-        for rank, (did, score) in enumerate(score_list):
-            f.write(f'{qid}\t{did}\t{rank+1}\n')
+    qq = list(all_scores.keys())
+
+    with open(args.score_file + '.marco', 'w') as f:
+        for qid in qq:
+            score_list = sorted(list(all_scores[qid].items()), key=lambda x: x[1], reverse=True)
+            for rank, (did, score) in enumerate(score_list):
+                f.write(f'{qid}\t{did}\t{rank+1}\n')
 
