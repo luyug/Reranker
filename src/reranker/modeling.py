@@ -60,6 +60,7 @@ class Reranker(nn.Module):
             logits = logits.transpose(0, 1).contiguous()
 
         if self.training:
+            logits = logits[:, 1]
             scores = logits.view(
                 self.train_args.per_device_train_batch_size,
                 self.data_args.train_group_size
