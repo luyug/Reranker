@@ -30,6 +30,8 @@ class Reranker(nn.Module):
         self.train_args = train_args
         self.data_args = data_args
 
+        self._keys_to_ignore_on_save = []
+
         self.cross_entropy = nn.CrossEntropyLoss(reduction='mean')
 
         self.register_buffer(

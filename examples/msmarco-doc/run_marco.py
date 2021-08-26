@@ -20,7 +20,7 @@ from transformers import (
 )
 
 logger = logging.getLogger(__name__)
-
+os.environ["WANDB_DISABLED"] = "true"
 
 def main():
     parser = HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
@@ -60,7 +60,7 @@ def main():
     # Set seed
     set_seed(training_args.seed)
 
-    num_labels = 1
+    num_labels = 2
 
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
