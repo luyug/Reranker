@@ -24,13 +24,15 @@ def search(index_dir, queries, collection_file, run_file):
     with open(run_file, 'w') as out_file:
         for query in tqdm(queries, desc=f"Running {len(queries)} queries"):
             hits = searcher.search(query)
-            for hit in hits:
-                out_file.write(f"{query} {hit.docid} {hit.score}\n")
+            for rank, hit in enumerate(hits):
+                out_file.write(f"{query}\tQ0\t{hit.docid}\t{rank+1}\t{hit.score:.4f}\t{run_file}\n")
                 collection[hit.docid] = searcher.doc(hit.docid).contents()
 
     with open(collection_file, 'w') as out_file:
         for docid, text in collection.items():
             out_file.write(f"{docid}\t{text}\n")
+
+    print(f"Seacrch results written to {run_file}; collection written to {collection_file}")
 
 
 if __name__ == '__main__':

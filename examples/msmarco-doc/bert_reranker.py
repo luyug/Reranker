@@ -125,7 +125,7 @@ if __name__ == "__main__":
     parser.add_argument('--run_file', required=True, type=str)
     parser.add_argument('--collection_file', required=True, type=str)
     parser.add_argument('--query_file', required=True, type=str)
-    parser.add_argument('--run_type', type=str, default='msmarco')
+    parser.add_argument('--run_type', type=str, default='trec')
     parser.add_argument('--model_name_or_path', type=str, default='nboost/pt-bert-large-msmarco')
     parser.add_argument('--tokenizer_name_or_path', type=str, default='bert-large-uncased')
     parser.add_argument('--output_path', required=True, type=str)
