@@ -3,6 +3,7 @@ import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from timeit import default_timer as timer
+
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
@@ -21,7 +22,7 @@ def load_queries(query_path):
         for line in tqdm(f, desc="loading query...."):
             if len(line.strip()) == 0:
                 continue
-            qid, text = line.strip().split(",",1)
+            qid, text = line.strip().split(",", 1)
             query[qid] = text
     return query
 
@@ -33,7 +34,7 @@ def load_run(run_path, run_type='msmarco'):
             if run_type == 'msmarco':
                 qid, docid, score = line.strip().split()
             elif run_type == 'trec':
-                qid, _, docid, rank, score, _ = line.strip().split(" ")
+                qid, _, docid, rank, score, _ = line.strip().split()
             qid = qid
             docid = docid
             if qid not in run.keys():
@@ -105,7 +106,7 @@ def main(args):
             last_rank = i
 
         # add the rest of ranks below cut_off, we don't need to re-rank them.
-        for docid in run[qid][last_rank+1:]:
+        for docid in run[qid][last_rank + 1:]:
             last_score -= 1
             last_rank += 1
             if args.run_type == 'msmarco':
