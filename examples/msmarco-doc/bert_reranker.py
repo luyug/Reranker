@@ -117,8 +117,10 @@ def main(args):
 
     print("passage re-ranking time: %.1f ms" % (1000 * total_ranking_time / len(qids)))
 
-    with open(args.output_path, "w") as f:
+    with open(args.output_ranking, "w") as f:
         f.writelines(lines)
+
+    print(f"Completed reranking { args.run_file = }, {args.cut_off = }, {args.run_type = }")
 
 
 if __name__ == "__main__":
@@ -129,7 +131,7 @@ if __name__ == "__main__":
     parser.add_argument('--run_type', type=str, default='trec')
     parser.add_argument('--model_name_or_path', type=str, default='nboost/pt-bert-large-msmarco')
     parser.add_argument('--tokenizer_name_or_path', type=str, default='bert-large-uncased')
-    parser.add_argument('--output_path', required=True, type=str)
+    parser.add_argument('--output_ranking', required=True, type=str)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--cut_off', type=int, default=1000)
     parser.add_argument('--cache_dir', type=str, default='cache')
@@ -144,5 +146,5 @@ if __name__ == "__main__":
 # --tokenizer_name_or_path nboost/pt-bert-large-msmarco \
 # --batch_size 128 \
 # --run_type trec \
-# --output_path bert-large-bm25-top500-dl2019-pass.res \
+# --output_ranking bert-large-bm25-top500-dl2019-pass.res \
 # --cut_off 500
