@@ -115,12 +115,13 @@ def main(args):
                 lines.append(str(qid) + " " + "Q0" + " " + str(docid) + " " + str(last_rank + 1) + " " + str(
                     last_score) + " " + "bert" + "\n")
 
-    print("passage re-ranking time: %.1f ms" % (1000 * total_ranking_time / len(qids)))
+    print("Passage re-ranking time: %.1f ms" % (1000 * total_ranking_time / len(qids)))
 
     with open(args.output_ranking, "w") as f:
         f.writelines(lines)
 
     print(f"Completed reranking { args.run_file = }, {args.cut_off = }, {args.run_type = }")
+    print(f"Results written to {args.output_ranking}")
 
 
 if __name__ == "__main__":

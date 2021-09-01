@@ -17,20 +17,20 @@ logging.basicConfig(level=logging.INFO)
 
 
 def read_qrel():
-    qrel = defaultdict(list)
-    rankings = defaultdict(list)
+    relevant = defaultdict(list)
+    non_relevant = defaultdict(list)
     with open(args.qrel, 'rt', encoding='utf8') as fh:
         for line in fh:
             topicid, _, docid, rel = line.split()
             if int(rel) > 0:
-                qrel[topicid].append(docid)
+                relevant[topicid].append(docid)
             else:
-                rankings[topicid].append(docid)
-    return qrel, rankings
+                non_relevant[topicid].append(docid)
+    return relevant, non_relevant
 
 
 def main(args):
-    qrel, rankings = read_qrel()
+    relevant, non_relevant = read_qrel()
 
     logging.info(f"Reading documents from {args.doc_collection}")
     columns = ['did', 'url', 'title', 'body']
@@ -62,18 +62,19 @@ def main(args):
     if out_file.endswith('.tsv') or out_file.endswith('.txt') or out_file.endswith('.csv'):
         out_file = out_file[:-4]
     out_file = os.path.join(args.json_dir, os.path.split(out_file)[1])
-    out_file = out_file + '.group.json'
+    out_file = out_file + '.features.json'
 
-    queries = list(rankings.keys())
+    queries = set(list(non_relevant.keys()) + list(relevant.keys()))
+    queries = qry_map.keys()
     with open(out_file, 'w') as f:
-        for qid in tqdm(queries):
+        for qid in tqdm(queries, desc="Processing queries"):
             # pick from top of the full initial ranking
-            negs = rankings[qid]
+            negs = non_relevant[qid]
             # shuffle if random flag is on
             if args.random:
                 random.shuffle(negs)
             # pick n samples
-            negs = negs[:args.n_sample]
+            # negs = negs[:args.n_sample]
 
             neg_encoded = []
             for neg in negs:
@@ -92,7 +93,7 @@ def main(args):
                     'pid': neg,
                 })
             pos_encoded = []
-            for pos in qrel[qid]:
+            for pos in relevant[qid]:
                 idx = doc_map[pos]
                 item = collection[idx]
                 did, url, title, body = (item[k] for k in columns)
@@ -128,16 +129,13 @@ def main(args):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--tokenizer_name', required=True)
-    parser.add_argument('--truncate', type=int, default=512)
-
-    parser.add_argument('--n_sample', type=int, default=100)
-    parser.add_argument('--random', action='store_true')
-    parser.add_argument('--json_dir', required=True)
-
-    parser.add_argument('--qrel', required=True)
-    parser.add_argument('--query_collection', required=True)
-    parser.add_argument('--doc_collection', required=True)
+    parser.add_argument('--tokenizer_name', required=True, help="Which tokenizer to put to encode text.")
+    parser.add_argument('--truncate', type=int, default=512, help="Truncate feature vector to length.")
+    parser.add_argument('--random', action='store_true', default=True, help="Shuffle the hard negatives.")
+    parser.add_argument('--json_dir', required=True, help="Where to write the feature json to.")
+    parser.add_argument('--qrel', required=True, help="Qrel file to use.")
+    parser.add_argument('--query_collection', required=True, help="Query CSV to use.")
+    parser.add_argument('--doc_collection', required=True, help="Document CSV to use.")
     args = parser.parse_args()
 
     main(args)

@@ -25,7 +25,7 @@ def search(searcher, query, depth):
     return rank_list
 
 
-def run_queries(index_dir, queries, collection_file, run_file, depth=1000):
+def run_queries(index_dir, queries, run_file, collection_file, depth=1000):
     searcher = SimpleSearcher(index_dir)
     collection = {}
 
@@ -35,11 +35,13 @@ def run_queries(index_dir, queries, collection_file, run_file, depth=1000):
                 out_file.write(f"{qid}\tQ0\t{r['doc']}\t{r['rank']}\t{r['score']:.4f}\t{run_file}\n")
                 collection[r['doc']] = searcher.doc(r['doc']).contents().replace("\n", " ")
 
-    with open(collection_file, 'w') as out_file:
-        for docid, text in collection.items():
-            out_file.write(f"{docid}\t{text}\n")
+    if collection_file:
+        with open(collection_file, 'w') as out_file:
+            for docid, text in collection.items():
+                out_file.write(f"{docid}\t{text}\n")
+            print(f"Collection written to {collection_file}")
 
-    print(f"Seacrch results written to {run_file}; collection written to {collection_file}")
+    print(f"Seacrch results written to {run_file}")
 
 
 if __name__ == '__main__':
@@ -55,11 +57,13 @@ if __name__ == '__main__':
     parser.add_argument('--index_dir', type=dir_path, required=True)
     parser.add_argument('--queries', type=argparse.FileType('r'), required=True)
     parser.add_argument('-d', '--depth', type=int, default=1000, help='Retrieve up to rank depth')
-    parser.add_argument('collection', help="File to write collection")
+    parser.add_argument('--collection', help="File to write collection")
     parser.add_argument('ranking', help="File to write ranking")
 
     args = parser.parse_args()
 
     qs = dict(load_queries(args.queries))
 
-    run_queries(args.index_dir, qs, args.collection, args.ranking)
+    print("Params:\n " + "\n ".join([f"{k} = {v}" for k,v in vars(args).items()]))
+    run_queries(index_dir=args.index_dir, queries=qs, run_file=args.ranking,
+                collection_file=args.collection)
