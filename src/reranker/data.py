@@ -86,14 +86,15 @@ class GroupedTrainDataset(Dataset):
             random.choice(group['pos'])[k] for k in self.document_columns]
         examples.append((qry, pos_psg))
 
-        if len(group['neg']) < self.args.train_group_size - 1:
-            negs = random.choices(group['neg'], k=self.args.train_group_size - 1)
-        else:
-            negs = random.sample(group['neg'], k=self.args.train_group_size - 1)
+        if group['neg']:
+            if len(group['neg']) < self.args.train_group_size - 1:
+                negs = random.choices(group['neg'], k=self.args.train_group_size - 1)
+            else:
+                negs = random.sample(group['neg'], k=self.args.train_group_size - 1)
 
-        for neg_entry in negs:
-            _, neg_psg = [neg_entry[k] for k in self.document_columns]
-            examples.append((qry, neg_psg))
+            for neg_entry in negs:
+                _, neg_psg = [neg_entry[k] for k in self.document_columns]
+                examples.append((qry, neg_psg))
 
         # collaborative mode, split the group
         if self.train_args is not None and self.train_args.collaborative:

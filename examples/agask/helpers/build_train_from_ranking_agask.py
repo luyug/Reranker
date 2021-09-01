@@ -64,10 +64,14 @@ def main(args):
     out_file = os.path.join(args.json_dir, os.path.split(out_file)[1])
     out_file = out_file + '.features.json'
 
-    queries = set(list(non_relevant.keys()) + list(relevant.keys()))
+    judged_qids = set(list(non_relevant.keys()) + list(relevant.keys()))
     queries = qry_map.keys()
     with open(out_file, 'w') as f:
         for qid in tqdm(queries, desc="Processing queries"):
+
+            if qid not in judged_qids:  # no qrels found for this query
+                continue
+
             # pick from top of the full initial ranking
             negs = non_relevant[qid]
             # shuffle if random flag is on
@@ -117,11 +121,13 @@ def main(args):
                     max_length=args.truncate,
                     truncation=True),
             }
-            item_set = {
-                'qry': query_dict,
-                'pos': pos_encoded,
-                'neg': neg_encoded,
-            }
+
+            item_set = {'qry': query_dict}
+            if len(pos_encoded) > 0:
+                item_set['pos'] = pos_encoded
+            if len(neg_encoded) > 0:
+                item_set['neg'] = neg_encoded
+
             f.write(json.dumps(item_set) + '\n')
 
     print(f"Results written to {out_file}")
