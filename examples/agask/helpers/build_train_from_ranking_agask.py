@@ -80,6 +80,9 @@ def main(args):
             # pick n samples
             # negs = negs[:args.n_sample]
 
+            if len(negs) == 0:
+                negs = random.choice([x for x in non_relevant.values() if len(x) > 0])
+
             neg_encoded = []
             for neg in negs:
                 idx = doc_map[neg]
@@ -129,6 +132,7 @@ def main(args):
                 item_set['neg'] = neg_encoded
 
             f.write(json.dumps(item_set) + '\n')
+            # print(f"{item_set['qry']['qid']}\t{len(item_set.get('pos', []))}\t{len(item_set.get('neg', []))}")
 
     print(f"Results written to {out_file}")
 
