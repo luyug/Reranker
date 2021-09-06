@@ -1,5 +1,7 @@
-from argparse import ArgumentParser
 import torch
+from pathlib import Path
+
+from argparse import ArgumentParser
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from timeit import default_timer as timer
@@ -126,17 +128,32 @@ def main(args):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
+
     parser.add_argument('--run_file', required=True, type=str)
+    parser.add_argument('--run_type', type=str, default='trec')
     parser.add_argument('--collection_file', required=True, type=str)
     parser.add_argument('--query_file', required=True, type=str)
-    parser.add_argument('--run_type', type=str, default='trec')
+
     parser.add_argument('--model_name_or_path', type=str, default='nboost/pt-bert-large-msmarco')
     parser.add_argument('--tokenizer_name_or_path', type=str, default='bert-large-uncased')
-    parser.add_argument('--output_ranking', required=True, type=str)
+
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--cut_off', type=int, default=1000)
+
     parser.add_argument('--cache_dir', type=str, default='cache')
+
+    parser.add_argument('--output_ranking', required=False, type=str)
+
     args = parser.parse_args()
+
+    if not args.output_ranking:
+        args.output_ranking = f"run-query_{Path(args.query_file).stem}-stage1_{Path(args.run_file).stem}-model_"+\
+            f"{Path(args.model_name_or_path).stem}-cut_{args.cut_off}.res"
+
+    print('Params:')
+    for k, v in vars(args).items():
+        print(f" {k}: {v}")
+
     main(args)
 
 # python3 bert_reranker.py \
