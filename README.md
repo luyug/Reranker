@@ -202,7 +202,6 @@ For the gradient cache utility, consider citing our [preprint](https://arxiv.org
 ```
 
 ## License
-Reranker is currently licensed under CC-BY-NC 4.0.
-
+Reranker is currently licensed under APACHE-2.0.
 
 
